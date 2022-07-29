@@ -1,5 +1,26 @@
+"""
+Author: Kevin Holt
+Version: 0.2.15
+Project: TTRPG Helper
+File: Character
 
-SKILL_MOD_NAME = [
+This file holds the Character class which is the base of most of this tool.
+
+One of the biggest purposes of the Character class is to store values and stats for the modules to display and/or run calculations on.
+Several calcualtions are also done within the class.
+"""
+from ttrpg_item import Item
+from ttrpg_item import Weapon
+from ttrpg_item import Armor
+from ttrpg_spell import Spell
+import pickle
+
+
+"""
+This global constant defines which base ability score (STR, DEX, CON, INT, WIS, CHA) corresponds with which skill modifier.
+This needs to be in the same order as 'self.skillNames', 'self.skillMod', and 'self.skillProf'.
+"""
+SKILL_MOD_NAME = (
     "dex",
     "wis",
     "int",
@@ -18,18 +39,24 @@ SKILL_MOD_NAME = [
     "dex",
     "dex",
     "wis"
-    ]
+    )
 
-class Character:
-    def __init__():
-        self.level = 0
+class Character(object):
+
+    def __init__(self):
+        """Variable Initialization"""
+        self.name = "John Doe"
+        self.level = 1
         self.exp = 0
-        self.class = "Fighter"
+        self.expToNext = 100
+        self.playerClass = "Fighter"
         self.race = "Human"
-        self.alignment = 5
+        self.alignment = "NG"
         self.maxHP = 1
         self.curHP = 1
         self.profMod = 2
+        self.armorClass = 10
+        self.speed = 30
 
         self.str = 0
         self.dex = 0
@@ -58,15 +85,8 @@ class Character:
             "Survival"
         ]
         self.skillMod = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self.skillProf = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+        self.skillProf = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # True = Proficiency in skill
 
-        self.coinPlatinum = 0
-        self.coinGold = 0
-        self.coinSilver = 0
-        self.coinCopper = 0
-        
-
-    def claculateStats():
         self.strMod = int((self.str - 10) / 2)
         self.dexMod = int((self.dex - 10) / 2)
         self.conMod = int((self.con - 10) / 2)
@@ -74,25 +94,65 @@ class Character:
         self.wisMod = int((self.wis - 10) / 2)
         self.chaMod = int((self.cha - 10) / 2)
 
-        for i in range(self.skillMod):
-            switch SKILL_MOD_NAME[i]:
+        self.coinPlatinum = 0
+        self.coinGold = 0
+        self.coinSilver = 0
+        self.coinCopper = 0
+
+        self.items = []
+        self.weapons = []
+        self.armor = []
+        self.spells = []
+
+        """ This is for the character save/load update and currently does nothing.
+        try:
+            self.load()
+        except:
+            self.name = self.name
+        """
+
+    """Runs the calculations for the assorted modifier stats and stores them in the corresponding variable"""
+    def updateStats(self):
+        self.strMod = int((self.str - 10) / 2)
+        self.dexMod = int((self.dex - 10) / 2)
+        self.conMod = int((self.con - 10) / 2)
+        self.intMod = int((self.int - 10) / 2)
+        self.wisMod = int((self.wis - 10) / 2)
+        self.chaMod = int((self.cha - 10) / 2)
+
+        for i in range(len(self.skillMod)):
+            match SKILL_MOD_NAME[i]:
                 case "str":
                     self.skillMod[i] = self.strMod + self.profMod if self.skillProf[i] else self.strMod
-                    break
                 case "dex":
                     self.skillMod[i] = self.dexMod + self.profMod if self.skillProf[i] else self.dexMod
-                    break
                 case "con":
                     self.skillMod[i] = self.conMod + self.profMod if self.skillProf[i] else self.conMod
-                    break
                 case "int":
                     self.skillMod[i] = self.intMod + self.profMod if self.skillProf[i] else self.intMod
-                    break
                 case "wis":
                     self.skillMod[i] = self.wisMod + self.profMod if self.skillProf[i] else self.wisMod
-                    break
                 case "cha":
                     self.skillMod[i] = self.chaMod + self.profMod if self.skillProf[i] else self.chaMod
-                    break
-                default:
+                case _:
                     self.skillMod[i] = 0
+
+    """Everything below this line is planned to be fully implemented in a future update"""
+    def newItem(self, newName = "Item", newDesc = "Description"):
+        self.items.append(Item(newName, newDesc))
+    def newWeapon(self, newName = "Item", newDesc = "Description"):
+        self.weapons.append(Weapon(newName, newDm, newDmgDie, newHitMod, newDesc))
+    def newArmor(self, newName = "Item", newAC = 0, newDesc = "Description"):
+        self.armor.append(Armor(newName, newAC, newDesc))
+    def newSpell(self, newName = "Spell", newComponents = "", newShortDesc = "Short Description", newLongDesc = "Long Description"):
+        self.spells.append(Spell(newName, newComponents, newShortDesc, newLongDesc))
+
+    def save(self):
+        #Saves as <self.name>.txt
+        file = open(self.name + ".txt", "w")
+        pickle.dump(self, file)
+        file.close()
+    def load(self):
+        file = open(self.name + ".txt","r")
+        self = pickle.load(file)
+        file.close()
